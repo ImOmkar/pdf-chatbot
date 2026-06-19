@@ -1,20 +1,16 @@
 from fastapi import FastAPI, UploadFile, File
-from rag import ask_question
-from rag import upload_document, summarize_document
-from schemas import (
+from .rag import (
+                    upload_document, 
+                    summarize_document, 
+                    ask_question, 
+                    ask_question_in_document,
+                    get_documents
+                )
+from .schemas import (
     ChatRequest,
     SummaryRequest
 )
-
-from rag import (
-    ask_question,
-    ask_question_in_document
-)
-
 import os
-
-
-from rag import get_documents
 
 UPLOAD_DIR = "uploads"
 
