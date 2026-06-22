@@ -10,6 +10,15 @@ from .schemas import (
     ChatRequest,
     SummaryRequest
 )
+
+from app.chat_service import (
+    get_sessions,
+    get_session_messages,
+    get_langchain_history,
+    save_message,
+    delete_session
+)
+
 import os
 
 UPLOAD_DIR = "uploads"
@@ -60,6 +69,10 @@ def chat(
 ):
 
     try:
+        
+        history = get_langchain_history(
+            request.session_id
+        )
 
         if request.document:
 
@@ -71,12 +84,34 @@ def chat(
             )
 
         else:
+            
+            print("\nLoaded History:\n")
+
+            for msg in history:
+
+                print(
+                    type(msg).__name__,
+                    msg.content
+                )
 
             answer = (
                 ask_question(
-                    request.question
+                    request.question,
+                    history
                 )
             )
+            
+        save_message(
+            request.session_id,
+            "human",
+            request.question
+        )
+
+        save_message(
+            request.session_id,
+            "ai",
+            answer
+        )
 
         return {
             "success": True,
@@ -122,6 +157,42 @@ def summarize(
             "error": str(e)
         }
 
+@app.get("/sessions")
+def sessions():
+
+    return {
+        "sessions": get_sessions()
+    }
+    
+@app.get(
+    "/sessions/{session_id}"
+)
+def session_messages(
+    session_id: str
+):
+
+    return {
+        "messages":
+        get_session_messages(
+            session_id
+        )
+    }
+    
+@app.delete(
+    "/sessions/{session_id}"
+)
+def remove_session(
+    session_id: str
+):
+
+    delete_session(
+        session_id
+    )
+
+    return {
+        "success": True
+    }
+    
 @app.get("/")
 def home():
     return {

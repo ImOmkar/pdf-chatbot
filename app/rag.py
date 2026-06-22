@@ -18,7 +18,10 @@ from langchain_classic.chains.retrieval import (
 
 from langchain_core.prompts import (
     ChatPromptTemplate,
+    MessagesPlaceholder
 )
+
+
 
 from langchain_core.messages import (
     HumanMessage,
@@ -109,31 +112,6 @@ def upload_document(
     return len(chunks)
 
 
-
-def rewrite_question(
-    question,
-    history_text
-):
-
-    rewrite_prompt = f"""
-History:
-
-{history_text}
-
-Question:
-
-{question}
-
-Rewrite the question only.
-Do not answer.
-"""
-
-    response = llm.invoke(
-        rewrite_prompt
-    )
-
-    return response.content
-
 def retrieve_with_scores(
     query
 ):
@@ -156,35 +134,6 @@ def get_answer(
             }
         )
     )
-
-def build_history_text(
-    chat_history
-):
-
-    history_text = ""
-
-    for msg in chat_history:
-
-        if isinstance(
-            msg,
-            HumanMessage
-        ):
-
-            history_text += (
-                f"User: {msg.content}\n"
-            )
-
-        elif isinstance(
-            msg,
-            AIMessage
-        ):
-
-            history_text += (
-                f"AI: {msg.content}\n"
-            )
-
-    return history_text
-
 
 def get_documents():
 
@@ -209,13 +158,21 @@ def get_documents():
     )
 
 def ask_question(
-    question
+    question,
+    session_history
 ):
+    
+    rewritten_question = (
+        rewrite_question(
+            question,
+            session_history
+        )
+    )
 
     response = (
         retrieval_chain.invoke(
             {
-                "input": question
+                "input": rewritten_question
             }
         )
     )
@@ -305,3 +262,49 @@ def ask_question_in_document(
             "context": docs
         }
     )
+    
+    
+contextualize_q_prompt = (
+    ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                """
+Given a chat history and the latest user question,
+rewrite the question so it can be understood
+without the chat history.
+
+Do not answer the question.
+Only rewrite it.
+"""
+            ),
+
+            MessagesPlaceholder(
+                "chat_history"
+            ),
+
+            (
+                "human",
+                "{input}"
+            )
+        ]
+    )
+)
+
+def rewrite_question(
+    question,
+    chat_history
+):
+
+    prompt = (
+        contextualize_q_prompt.format_messages(
+            input=question,
+            chat_history=chat_history
+        )
+    )
+
+    response = llm.invoke(
+        prompt
+    )
+
+    return response.content

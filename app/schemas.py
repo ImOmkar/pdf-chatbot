@@ -4,6 +4,7 @@ from typing import Optional
 class ChatRequest(
     BaseModel
 ):
+    session_id: str
     question: str
     document: Optional[str] = None
 
