@@ -1,5 +1,5 @@
 from fastapi import FastAPI, UploadFile, File
-from .rag import (
+from app.services.rag_service import (
                     upload_document, 
                     summarize_document, 
                     ask_question, 
@@ -11,7 +11,7 @@ from .schemas import (
     SummaryRequest
 )
 
-from app.chat_service import (
+from app.services.chat_service import (
     get_sessions,
     get_session_messages,
     get_langchain_history,

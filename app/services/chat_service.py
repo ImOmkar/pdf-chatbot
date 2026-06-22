@@ -1,8 +1,8 @@
-from .database import (
+from app.db.database import (
     SessionLocal
 )
 
-from .models import (
+from app.db.models import (
     ChatMessage
 )
 

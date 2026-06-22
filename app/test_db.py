@@ -1,4 +1,4 @@
-from chat_service import (
+from app.services.chat_service import (
     save_message,
     load_history
 )
