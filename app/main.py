@@ -6,7 +6,7 @@ from app.services.rag_service import (
                     ask_question_in_document,
                     get_documents
                 )
-from .schemas import (
+from app.schemas.schemas import (
     ChatRequest,
     SummaryRequest
 )
