@@ -95,6 +95,7 @@ def get_session_messages(
         for msg in messages
     ]
     
+    
 def save_message(
     session_id,
     role,
@@ -179,16 +180,19 @@ def delete_session(
 
     db = SessionLocal()
 
-    (
-        db.query(
-            ChatMessage
-        )
-        .filter(
-            ChatMessage.session_id
-            == session_id
-        )
-        .delete()
-    )
+    db.query(
+        ChatMessage
+    ).filter(
+        ChatMessage.session_id
+        == session_id
+    ).delete()
+
+    db.query(
+        ChatSession
+    ).filter(
+        ChatSession.session_id
+        == session_id
+    ).delete()
 
     db.commit()
 

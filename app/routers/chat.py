@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-
+from fastapi import HTTPException
 from app.services.chat_service import (
     create_session,
     get_langchain_history,
@@ -91,7 +91,7 @@ def chat(
 
     except Exception as e:
 
-        return {
-            "success": False,
-            "error": str(e)
-        }
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
