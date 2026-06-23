@@ -4,7 +4,12 @@ import uuid
 from app.services.chat_service import (
     get_sessions,
     get_session_messages,
-    delete_session)
+    delete_session,
+    rename_session)
+
+from app.schemas.schemas import (
+    RenameSessionRequest,
+)
 
 
 router = APIRouter()
@@ -37,6 +42,24 @@ def create_new_session():
 
     return {
         "session_id": session_id
+    }
+    
+    
+@router.put(
+    "/sessions/{session_id}"
+)
+def update_session(
+    session_id: str,
+    request: RenameSessionRequest
+):
+
+    rename_session(
+        session_id,
+        request.title
+    )
+
+    return {
+        "success": True
     }
 
 @router.delete(

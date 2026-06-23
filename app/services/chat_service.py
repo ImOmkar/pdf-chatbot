@@ -174,6 +174,32 @@ history = get_langchain_history(
 print(history)
 
 
+def rename_session(
+    session_id,
+    title
+):
+
+    db = SessionLocal()
+
+    session = (
+        db.query(
+            ChatSession
+        )
+        .filter(
+            ChatSession.session_id
+            == session_id
+        )
+        .first()
+    )
+
+    if session:
+
+        session.title = title
+
+        db.commit()
+
+    db.close()
+
 def delete_session(
     session_id
 ):

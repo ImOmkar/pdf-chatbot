@@ -112,6 +112,8 @@ def upload_document(
     )
 
     documents = loader.load()
+    
+    page_count = len(documents)
 
     splitter = (
         RecursiveCharacterTextSplitter(
@@ -123,6 +125,18 @@ def upload_document(
     chunks = splitter.split_documents(
         documents
     )
+    
+    chunk_count = len(chunks)
+    
+    for chunk in chunks:
+
+        chunk.metadata["page_count"] = (
+            page_count
+        )
+
+        chunk.metadata["chunk_count"] = (
+            chunk_count
+        )
 
     vector_store.add_documents(
         chunks
@@ -327,3 +341,77 @@ def rewrite_question(
     )
 
     return response.content
+
+
+
+def get_document_metadata(
+    document_name
+):
+
+    docs = (
+        vector_store.similarity_search(
+            document_name,
+            k=1
+        )
+    )
+
+    if not docs:
+
+        return None
+
+    doc = docs[0]
+
+    return {
+
+        "filename":
+            document_name,
+
+        "page_count":
+            doc.metadata.get(
+                "page_count",
+                0
+            ),
+
+        "chunk_count":
+            doc.metadata.get(
+                "chunk_count",
+                0
+            )
+
+    }
+    
+    
+def delete_document(
+    document_name
+):
+
+    results = vector_store.get()
+
+    ids_to_delete = []
+
+    for doc_id, metadata in zip(
+        results["ids"],
+        results["metadatas"]
+    ):
+
+        source = metadata.get(
+            "source",
+            ""
+        )
+
+        if (
+            document_name.lower()
+            in source.lower()
+        ):
+
+            ids_to_delete.append(
+                doc_id
+            )
+
+    if ids_to_delete:
+
+        vector_store.delete(
+            ids=ids_to_delete
+        )
+
+    return len(ids_to_delete)

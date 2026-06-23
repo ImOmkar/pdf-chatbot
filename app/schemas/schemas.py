@@ -13,3 +13,9 @@ class SummaryRequest(BaseModel):
 
 class SessionCreateResponse(BaseModel):
     session_id: str
+    
+class RenameSessionRequest(
+    BaseModel
+):
+
+    title: str
