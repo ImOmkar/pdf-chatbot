@@ -1,13 +1,16 @@
 from fastapi import APIRouter
 
 from app.services.chat_service import (
+    create_session,
     get_langchain_history,
-    save_message
+    save_message,
+    session_exists
 )
 
 from app.services.rag_service import (
                     ask_question, 
                     ask_question_in_document,
+                    generate_session_title,
                 )
 
 from app.schemas.schemas import (
@@ -52,6 +55,21 @@ def chat(
                     request.question,
                     history
                 )
+            )
+            
+        if not session_exists(
+            request.session_id
+        ):
+
+            title = (
+                generate_session_title(
+                    request.question
+                )
+            )
+
+            create_session(
+                request.session_id,
+                title
             )
             
         save_message(

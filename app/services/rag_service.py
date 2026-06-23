@@ -84,6 +84,25 @@ retrieval_chain = create_retrieval_chain(
 )
 
 
+def generate_session_title(first_question):
+    
+    prompt = f"""
+        Generate a short conversation title
+        for this question.
+
+        Question:
+
+        {first_question}
+
+        Maximum 5 words.
+    """ 
+    
+    response = llm.invoke(
+        prompt
+    )
+
+    return response.content
+
 def upload_document(
     pdf_path
 ):

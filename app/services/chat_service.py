@@ -3,7 +3,8 @@ from app.db.database import (
 )
 
 from app.db.models import (
-    ChatMessage
+    ChatMessage,
+    ChatSession
 )
 
 from langchain_core.messages import (
@@ -11,25 +12,59 @@ from langchain_core.messages import (
     AIMessage
 )
 
-def get_sessions():
+def create_session(session_id, title):
     
     db = SessionLocal()
     
-    sessions = (
+    session = ChatSession(
+        session_id=session_id,
+        title=title
+    )
+    
+    db.add(session)
+    db.commit()
+    db.close()
+    
+def session_exists(session_id):
+    
+    db = SessionLocal()
+    
+    session = (
         db.query(
-            ChatMessage.session_id
+            ChatSession
+        ).filter(
+            ChatSession.session_id == session_id
         )
-        .distinct()
-        .all()
+        .first()
     )
     
     db.close()
     
-    return [
-        session[0]
-        for session in sessions
-    ]
+    return session is not None
 
+def get_sessions():
+
+    db = SessionLocal()
+
+    sessions = (
+        db.query(
+            ChatSession.session_id,
+            ChatSession.title
+        )
+        .all()
+    )
+
+    db.close()
+
+    return [
+        {
+            "session_id": session_id,
+            "title": title
+        }
+        for session_id, title in sessions
+    ]
+    
+    
 def get_session_messages(
     session_id
 ):
