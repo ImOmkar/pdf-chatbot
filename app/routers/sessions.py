@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+import uuid
 
 from app.services.chat_service import (
     get_sessions,
@@ -28,7 +29,16 @@ def session_messages(
             session_id
         )
     }
-    
+
+
+@router.post("/sessions")
+def create_new_session():
+    session_id = str(uuid.uuid4())
+
+    return {
+        "session_id": session_id
+    }
+
 @router.delete(
     "/sessions/{session_id}"
 )

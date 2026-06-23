@@ -10,3 +10,6 @@ class ChatRequest(
 
 class SummaryRequest(BaseModel):
     filename: str
+
+class SessionCreateResponse(BaseModel):
+    session_id: str
