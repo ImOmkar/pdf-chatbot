@@ -210,7 +210,38 @@ def ask_question(
         )
     )
 
-    return response["answer"]
+    sources = []
+
+    for doc in response["context"]:
+
+        sources.append({
+
+            "document":
+                doc.metadata
+                .get(
+                    "source",
+                    ""
+                )
+                .split("/")[-1]
+                .split("\\")[-1],
+
+            "page":
+                doc.metadata.get(
+                    "page",
+                    0
+                ) + 1
+
+        })
+
+    return {
+
+        "answer":
+            response["answer"],
+
+        "sources":
+            sources
+
+    }
 
 def summarize_document(
     filename

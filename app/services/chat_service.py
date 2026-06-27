@@ -223,3 +223,4 @@ def delete_session(
     db.commit()
 
     db.close()
+    

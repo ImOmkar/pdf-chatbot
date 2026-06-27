@@ -19,13 +19,91 @@ from app.schemas.schemas import (
 
 router = APIRouter()
 
+# @router.post("/chat")
+# def chat(
+#     request: ChatRequest
+# ):
+
+#     try:
+        
+#         history = get_langchain_history(
+#             request.session_id
+#         )
+
+#         if request.document:
+
+#             answer = (
+#                 ask_question_in_document(
+#                     request.question,
+#                     request.document
+#                 )
+#             )
+
+#         else:
+            
+#             print("\nLoaded History:\n")
+
+#             for msg in history:
+
+#                 print(
+#                     type(msg).__name__,
+#                     msg.content
+#                 )
+
+#             result = (
+#                 ask_question(
+#                     request.question,
+#                     history
+#                 )
+#             )
+            
+#         if not session_exists(
+#             request.session_id
+#         ):
+
+#             title = (
+#                 generate_session_title(
+#                     request.question
+#                 )
+#             )
+
+#             create_session(
+#                 request.session_id,
+#                 title
+#             )
+            
+#         save_message(
+#             request.session_id,
+#             "human",
+#             request.question
+#         )
+
+#         save_message(
+#             request.session_id,
+#             "ai",
+#             answer
+#         )
+
+#         return {
+#             "success": True,
+#             "answer": answer
+#         }
+
+#     except Exception as e:
+
+#         raise HTTPException(
+#             status_code=500,
+#             detail=str(e)
+#         )
+
+
 @router.post("/chat")
 def chat(
     request: ChatRequest
 ):
 
     try:
-        
+
         history = get_langchain_history(
             request.session_id
         )
@@ -39,8 +117,10 @@ def chat(
                 )
             )
 
+            sources = []
+
         else:
-            
+
             print("\nLoaded History:\n")
 
             for msg in history:
@@ -50,13 +130,21 @@ def chat(
                     msg.content
                 )
 
-            answer = (
+            result = (
                 ask_question(
                     request.question,
                     history
                 )
             )
-            
+
+            answer = (
+                result["answer"]
+            )
+
+            sources = (
+                result["sources"]
+            )
+
         if not session_exists(
             request.session_id
         ):
@@ -71,7 +159,7 @@ def chat(
                 request.session_id,
                 title
             )
-            
+
         save_message(
             request.session_id,
             "human",
@@ -85,8 +173,13 @@ def chat(
         )
 
         return {
+
             "success": True,
-            "answer": answer
+
+            "answer": answer,
+
+            "sources": sources
+
         }
 
     except Exception as e:
