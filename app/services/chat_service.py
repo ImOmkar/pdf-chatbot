@@ -1,6 +1,18 @@
+import json
+
+from fastapi.responses import StreamingResponse
+
 from app.db.database import (
     SessionLocal
 )
+
+from app.services.rag_service import (
+    
+    generate_session_title,
+    stream_answer
+)
+
+
 
 from app.db.models import (
     ChatMessage,
@@ -11,6 +23,135 @@ from langchain_core.messages import (
     HumanMessage,
     AIMessage
 )
+
+
+class ChatService:
+
+    def stream_chat(
+        self,
+        request
+    ):
+
+        history = get_langchain_history(
+            request.session_id
+        )
+
+        return StreamingResponse(
+
+            self._generate_stream(
+
+                request,
+
+                history
+
+            ),
+
+            media_type="text/event-stream"
+
+        )
+        
+    def _generate_stream(
+        self,
+        request,
+        history
+    ):
+
+        answer = ""
+
+        sources = []
+
+        for event in stream_answer(
+
+            request.question,
+
+            history
+
+        ):
+
+            if event["type"] == "chunk":
+
+                answer += event["content"]
+
+            elif event["type"] == "done":
+
+                answer = event["answer"]
+
+                sources = event["sources"]
+
+            yield (
+                f"data: "
+                f"{json.dumps(event)}\n\n"
+            )
+
+        # -------------------------------
+        # Save conversation
+        # -------------------------------
+
+        self._create_session_if_needed(
+            request
+        )
+
+        self._save_conversation(
+
+            request,
+
+            answer,
+
+            sources
+
+        )
+        
+        
+    def _create_session_if_needed(
+        self,
+        request
+    ):
+
+        if session_exists(
+            request.session_id
+        ):
+            return
+
+        title = generate_session_title(
+            request.question
+        )
+
+        create_session(
+            request.session_id,
+            title
+        )
+        
+    def _save_conversation(
+        self,
+        request,
+        answer,
+        sources
+    ):
+
+        save_message(
+
+            request.session_id,
+
+            "human",
+
+            request.question
+
+        )
+
+        save_message(
+
+            request.session_id,
+
+            "ai",
+
+            answer,
+
+            sources
+
+        )
+
+
+chat_service = ChatService()
 
 def create_session(session_id, title):
     

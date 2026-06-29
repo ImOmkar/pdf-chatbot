@@ -1,11 +1,13 @@
 from fastapi import APIRouter
 from fastapi import HTTPException
 from app.services.chat_service import (
+    chat_service,
     create_session,
     get_langchain_history,
     save_message,
     session_exists
 )
+import json
 
 from app.services.rag_service import (
                     ask_question, 
@@ -121,24 +123,7 @@ def chat(
 def chat_stream(
     request: ChatRequest
 ):
-    
-    history = get_langchain_history(
-        request.session_id
+
+    return chat_service.stream_chat(
+        request
     )
-    
-    def generate():
-
-        for chunk in stream_answer(
-
-            request.question,
-
-            history
-
-        ):
-
-            yield chunk
-
-    return StreamingResponse(
-                generate(),
-                media_type="text/plain"
-            )

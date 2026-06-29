@@ -509,15 +509,63 @@ def stream_answer(
         rewritten_question
     )
     
+    sources = []
+
+    for doc in docs:
+
+        sources.append({
+
+            "document":
+                doc.metadata
+                .get(
+                    "source",
+                    ""
+                )
+                .split("/")[-1]
+                .split("\\")[-1],
+
+            "page":
+                doc.metadata.get(
+                    "page",
+                    0
+                ) + 1
+
+        })
+    
     messages = qa_prompt.format_messages(
                 context=docs,
                 input=rewritten_question
                 )
     
+    answer = ""
+    
     for chunk in llm.stream(
         messages
     ):
 
-        yield chunk.content
-        
-    pass
+        if chunk.content:
+
+            answer += chunk.content
+
+            yield {
+
+                "type": "chunk",
+
+                "content":
+                    chunk.content
+
+            }
+            
+    yield {
+
+        "type": "done",
+
+        "answer":
+            answer,
+
+        "sources":
+            sources
+
+    }
+                
+    
