@@ -86,22 +86,62 @@ retrieval_chain = create_retrieval_chain(
 
 def generate_session_title(first_question):
     
+    # prompt = f"""
+    #     Generate a short conversation title
+    #     for this question.
+
+    #     Question:
+
+    #     {first_question}
+
+    #     Maximum 5 words.
+    # """ 
+    
     prompt = f"""
-        Generate a short conversation title
-        for this question.
+        Generate a concise conversation title.
+
+        Requirements:
+
+        - Return exactly ONE title.
+        - Maximum 4 words.
+        - Title Case.
+        - No quotes.
+        - No numbering.
+        - No bullet points.
+        - No explanation.
+        - No punctuation.
+        - Focus on the user's intent rather than repeating the question.
+        - Sound like a ChatGPT conversation title.
+
+        Examples:
+
+        Question: Who approved the loan?
+        Title: Loan Approval
+
+        Question: Summarize the company policy
+        Title: Company Policy Summary
+
+        Question: Explain employee benefits
+        Title: Employee Benefits
 
         Question:
 
         {first_question}
 
-        Maximum 5 words.
-    """ 
+        Title:
+    """
     
     response = llm.invoke(
         prompt
     )
+    
+    title = response.content.strip()
 
-    return response.content
+    title = title.split("\n")[0]
+
+    title = title.replace('"', "")
+
+    return title
 
 def upload_document(
     pdf_path

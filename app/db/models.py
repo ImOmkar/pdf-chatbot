@@ -2,7 +2,8 @@ from sqlalchemy import (
     Column,
     Integer,
     String,
-    Text
+    Text,
+    JSON
 )
 
 from sqlalchemy.orm import (
@@ -32,6 +33,11 @@ class ChatMessage(Base):
         Text
     )
     
+    sources = Column(
+        JSON,
+        nullable=True
+    )
+        
     
 class ChatSession(Base):
 

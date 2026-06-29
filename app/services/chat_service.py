@@ -90,7 +90,8 @@ def get_session_messages(
     return [
         {
             "role": msg.role,
-            "content": msg.content
+            "content": msg.content,
+            "sources": msg.sources or []
         }
         for msg in messages
     ]
@@ -99,14 +100,16 @@ def get_session_messages(
 def save_message(
     session_id,
     role,
-    content
+    content,
+    sources=None
 ):
     db = SessionLocal()
     
     message = ChatMessage(
         session_id=session_id,
         role=role,
-        content=content
+        content=content,
+        sources=sources
     )
     
     db.add(message)

@@ -169,7 +169,8 @@ def chat(
         save_message(
             request.session_id,
             "ai",
-            answer
+            answer,
+            sources
         )
 
         return {
