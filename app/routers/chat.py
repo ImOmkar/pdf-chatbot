@@ -11,91 +11,16 @@ from app.services.rag_service import (
                     ask_question, 
                     ask_question_in_document,
                     generate_session_title,
+                    stream_answer
                 )
 
 from app.schemas.schemas import (
     ChatRequest,
 )
 
+from fastapi.responses import StreamingResponse
+
 router = APIRouter()
-
-# @router.post("/chat")
-# def chat(
-#     request: ChatRequest
-# ):
-
-#     try:
-        
-#         history = get_langchain_history(
-#             request.session_id
-#         )
-
-#         if request.document:
-
-#             answer = (
-#                 ask_question_in_document(
-#                     request.question,
-#                     request.document
-#                 )
-#             )
-
-#         else:
-            
-#             print("\nLoaded History:\n")
-
-#             for msg in history:
-
-#                 print(
-#                     type(msg).__name__,
-#                     msg.content
-#                 )
-
-#             result = (
-#                 ask_question(
-#                     request.question,
-#                     history
-#                 )
-#             )
-            
-#         if not session_exists(
-#             request.session_id
-#         ):
-
-#             title = (
-#                 generate_session_title(
-#                     request.question
-#                 )
-#             )
-
-#             create_session(
-#                 request.session_id,
-#                 title
-#             )
-            
-#         save_message(
-#             request.session_id,
-#             "human",
-#             request.question
-#         )
-
-#         save_message(
-#             request.session_id,
-#             "ai",
-#             answer
-#         )
-
-#         return {
-#             "success": True,
-#             "answer": answer
-#         }
-
-#     except Exception as e:
-
-#         raise HTTPException(
-#             status_code=500,
-#             detail=str(e)
-#         )
-
 
 @router.post("/chat")
 def chat(
@@ -189,3 +114,31 @@ def chat(
             status_code=500,
             detail=str(e)
         )
+
+
+
+@router.post("/chat/stream")
+def chat_stream(
+    request: ChatRequest
+):
+    
+    history = get_langchain_history(
+        request.session_id
+    )
+    
+    def generate():
+
+        for chunk in stream_answer(
+
+            request.question,
+
+            history
+
+        ):
+
+            yield chunk
+
+    return StreamingResponse(
+                generate(),
+                media_type="text/plain"
+            )

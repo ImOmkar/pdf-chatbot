@@ -486,3 +486,38 @@ def delete_document(
         )
 
     return len(ids_to_delete)
+
+
+
+
+#-----------------------------------------streaming part---------------------------------#
+
+
+def stream_answer(
+    question,
+    session_history
+):
+    
+    rewritten_question = (
+        rewrite_question(
+            question,
+            session_history
+        )
+    )
+    
+    docs = retriever.invoke(
+        rewritten_question
+    )
+    
+    messages = qa_prompt.format_messages(
+                context=docs,
+                input=rewritten_question
+                )
+    
+    for chunk in llm.stream(
+        messages
+    ):
+
+        yield chunk.content
+        
+    pass
