@@ -84,6 +84,42 @@ retrieval_chain = create_retrieval_chain(
 )
 
 
+def generate_suggestions(
+    question,
+    answer
+):
+
+    prompt = f"""
+Generate exactly 4 short follow-up questions.
+
+Current Question:
+{question}
+
+AI Answer:
+{answer}
+
+Rules:
+- Maximum 8 words each
+- Don't number them
+- Don't use bullets
+- Each on a new line
+- Questions only
+"""
+
+    response = llm.invoke(
+        prompt
+    )
+
+    return [
+
+        line.strip()
+
+        for line in response.content.splitlines()
+
+        if line.strip()
+
+    ]
+
 def generate_session_title(first_question):
     
     # prompt = f"""
@@ -556,16 +592,16 @@ def stream_answer(
 
             }
             
+    suggestions = generate_suggestions(
+        question,
+        answer
+    )
+
     yield {
-
         "type": "done",
-
-        "answer":
-            answer,
-
-        "sources":
-            sources
-
+        "answer": answer,
+        "sources": sources,
+        "suggestions": suggestions
     }
                 
     
