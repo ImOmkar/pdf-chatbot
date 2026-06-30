@@ -12,8 +12,6 @@ from app.services.rag_service import (
     stream_answer
 )
 
-
-
 from app.db.models import (
     ChatMessage,
     ChatSession
@@ -23,6 +21,48 @@ from langchain_core.messages import (
     HumanMessage,
     AIMessage
 )
+
+
+def truncate_conversation_after_message(
+    session_id,
+    human_message_id
+):
+
+    db = SessionLocal()
+
+    delete = False
+
+    for message in (
+
+        db.query(
+            ChatMessage
+        )
+
+        .filter(
+            ChatMessage.session_id == session_id
+        )
+
+        .order_by(
+            ChatMessage.id
+        )
+
+    ):
+
+        if delete:
+
+            db.delete(
+                message
+            )
+
+        elif (
+            message.id == human_message_id
+        ):
+
+            delete = True
+
+    db.commit()
+
+    db.close()
 
 
 class ChatService:
@@ -87,6 +127,16 @@ class ChatService:
         # Save conversation
         # -------------------------------
 
+        if request.regenerate_message_id:
+
+            truncate_conversation_after_message(
+
+                request.session_id,
+
+                request.regenerate_message_id
+
+            )
+
         self._create_session_if_needed(
             request
         )
@@ -128,15 +178,17 @@ class ChatService:
         sources
     ):
 
-        save_message(
+        if not request.regenerate_message_id:
 
-            request.session_id,
+            save_message(
 
-            "human",
+                request.session_id,
 
-            request.question
+                "human",
 
-        )
+                request.question
+
+            )
 
         save_message(
 
@@ -230,8 +282,12 @@ def get_session_messages(
 
     return [
         {
+            "id": msg.id,
+
             "role": msg.role,
+
             "content": msg.content,
+
             "sources": msg.sources or []
         }
         for msg in messages

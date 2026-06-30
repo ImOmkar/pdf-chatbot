@@ -22,5 +22,9 @@ Thumbs.db
 # Chroma DB
 chroma_db/
 
+uploads/
+
+chatbot.db
+
 # Logs
 *.log

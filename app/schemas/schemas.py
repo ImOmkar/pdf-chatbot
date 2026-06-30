@@ -7,6 +7,7 @@ class ChatRequest(
     session_id: str
     question: str
     document: Optional[str] = None
+    regenerate_message_id: int | None = None
 
 class SummaryRequest(BaseModel):
     filename: str
