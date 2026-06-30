@@ -7,6 +7,8 @@ from app.routers.upload import router as upload_router
 from app.routers.documents import router as document_router
 from app.routers.sessions import router as sessions_router
 from app.routers.summarize import router as summarize_router
+from app.routers.export import router as export_chat
+from app.routers.source import router as get_source
 
 app = FastAPI()
 
@@ -40,6 +42,14 @@ app.include_router(
 
 app.include_router(
     summarize_router
+)
+
+app.include_router(
+    export_chat
+)
+
+app.include_router(
+    get_source
 )
 
   

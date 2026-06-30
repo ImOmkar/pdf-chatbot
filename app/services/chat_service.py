@@ -256,7 +256,35 @@ def get_sessions():
         }
         for session_id, title in sessions
     ]
-    
+
+def get_session_title(
+    session_id
+):
+
+    db = SessionLocal()
+
+    session = (
+
+        db.query(
+            ChatSession
+        )
+
+        .filter(
+            ChatSession.session_id
+            == session_id
+        )
+
+        .first()
+
+    )
+
+    db.close()
+
+    if not session:
+
+        return "Conversation"
+
+    return session.title
     
 def get_session_messages(
     session_id

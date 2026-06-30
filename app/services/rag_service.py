@@ -61,6 +61,7 @@ retriever = vector_store.as_retriever(
     search_kwargs={"k": 3}
 )
 
+# previous prompt
 qa_prompt = ChatPromptTemplate.from_template(
 """
 Answer the question using only the provided context.
@@ -70,6 +71,36 @@ Context:
 
 Question:
 {input}
+"""
+)
+
+# new answer plus suggestions prompt
+stream_qa_prompt = ChatPromptTemplate.from_template(
+"""
+Answer the question using only the provided context.
+
+Context:
+{context}
+
+Question:
+{input}
+
+After completing your answer, output exactly:
+
+<SUGGESTIONS>
+
+Generate exactly 4 follow-up questions.
+
+Rules:
+- One per line
+- No numbering
+- No bullets
+- Maximum 8 words each
+- Relevant to the answer
+
+</SUGGESTIONS>
+
+Do not output anything after </SUGGESTIONS>.
 """
 )
 
@@ -567,41 +598,190 @@ def stream_answer(
                 ) + 1
 
         })
-    
-    messages = qa_prompt.format_messages(
-                context=docs,
-                input=rewritten_question
-                )
-    
-    answer = ""
-    
-    for chunk in llm.stream(
-        messages
-    ):
 
-        if chunk.content:
+    # previous    
+    # messages = qa_prompt.format_messages(
+    #     context=docs,
+    #     input=rewritten_question
+    # )
 
-            answer += chunk.content
-
-            yield {
-
-                "type": "chunk",
-
-                "content":
-                    chunk.content
-
-            }
-            
-    suggestions = generate_suggestions(
-        question,
-        answer
+    messages = stream_qa_prompt.format_messages(
+        context=docs,
+        input=rewritten_question
     )
 
+    # previous
+    # answer = ""
+
+    answer = ""
+
+    suggestions = []
+
+    suggestion_buffer = ""
+
+    inside_suggestions = False
+
+    # previous
+    # for chunk in llm.stream(
+    #     messages
+    # ):
+
+    #     if chunk.content:
+
+    #         answer += chunk.content
+
+    #         yield {
+
+    #             "type": "chunk",
+
+    #             "content":
+    #                 chunk.content
+
+    #         }
+
+    for chunk in llm.stream(messages):
+
+        if not chunk.content:
+            continue
+
+        text = chunk.content
+
+        # -----------------------
+        # Start suggestions block
+        # -----------------------
+
+        if "<SUGGESTIONS>" in text:
+
+            before, after = text.split(
+                "<SUGGESTIONS>",
+                1
+            )
+
+            if before:
+
+                answer += before
+
+                yield {
+
+                    "type": "chunk",
+
+                    "content": before
+
+                }
+
+            inside_suggestions = True
+
+            suggestion_buffer += after
+
+            continue
+
+        # -----------------------
+        # End suggestions block
+        # -----------------------
+
+        if inside_suggestions:
+
+            if "</SUGGESTIONS>" in text:
+
+                before, _ = text.split(
+                    "</SUGGESTIONS>",
+                    1
+                )
+
+                suggestion_buffer += before
+
+                inside_suggestions = False
+
+            else:
+
+                suggestion_buffer += text
+
+            continue
+
+        # -----------------------
+        # Normal answer
+        # -----------------------
+
+        answer += text
+
+        yield {
+
+            "type": "chunk",
+
+            "content": text
+
+        }
+
+    # previous            
+    # suggestions = generate_suggestions(
+    #     question,
+    #     answer
+    # )
+
+    # yield {
+    #     "type": "done",
+    #     "answer": answer,
+    #     "sources": sources,
+    #     "suggestions": suggestions
+    # }
+
+    # yield {
+
+    #     "type": "done",
+
+    #     "answer": answer,
+
+    #     "sources": sources,
+
+    #     "suggestions": [
+
+    #         line.strip()
+
+    #         for line in suggestion_buffer.splitlines()
+
+    #         if line.strip()
+
+    #     ]
+
+    # }
+    
+
+    suggestions = [
+
+        line.strip()
+
+        for line in (
+
+            suggestion_buffer
+
+            .replace(
+                "<SUGGESTIONS>",
+                ""
+            )
+
+            .replace(
+                "</SUGGESTIONS>",
+                ""
+            )
+
+            .splitlines()
+
+        )
+
+        if line.strip()
+
+    ]
+
     yield {
+
         "type": "done",
+
         "answer": answer,
+
         "sources": sources,
+
         "suggestions": suggestions
+
     }
                 
     
