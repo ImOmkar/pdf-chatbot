@@ -240,21 +240,39 @@ def get_sessions():
     db = SessionLocal()
 
     sessions = (
+
         db.query(
-            ChatSession.session_id,
-            ChatSession.title
+            ChatSession
         )
+
+        .order_by(
+            ChatSession.is_pinned.desc(),
+            ChatSession.id.desc()
+        )
+
         .all()
+
     )
 
     db.close()
 
     return [
+
         {
-            "session_id": session_id,
-            "title": title
+
+            "session_id":
+                session.session_id,
+
+            "title":
+                session.title,
+
+            "is_pinned":
+                session.is_pinned
+
         }
-        for session_id, title in sessions
+
+        for session in sessions
+
     ]
 
 def get_session_title(
@@ -451,4 +469,36 @@ def delete_session(
     db.commit()
 
     db.close()
-    
+
+
+def toggle_pin(
+    session_id
+):  
+    print("session id", session_id)
+
+    db = SessionLocal()
+
+    session = (
+        db.query(
+            ChatSession
+        ).filter(
+            ChatSession.session_id
+            == session_id
+        ).first()
+    )
+
+    if not session:
+
+        return None
+
+    session.is_pinned = (
+        not session.is_pinned
+    )
+
+    db.commit()
+
+    db.refresh(
+        session
+    )
+
+    return session

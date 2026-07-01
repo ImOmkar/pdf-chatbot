@@ -3,7 +3,8 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
-    JSON
+    JSON,
+    Boolean
 )
 
 from sqlalchemy.orm import (
@@ -56,6 +57,12 @@ class ChatSession(Base):
 
     title = Column(
         String
+    )
+
+    is_pinned = Column(
+        Boolean,
+        default=False,
+        nullable=False
     )
     
     

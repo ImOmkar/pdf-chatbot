@@ -1,11 +1,14 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 import uuid
 
 from app.services.chat_service import (
     get_sessions,
     get_session_messages,
     delete_session,
-    rename_session)
+    rename_session,
+    toggle_pin
+
+    )
 
 from app.schemas.schemas import (
     RenameSessionRequest,
@@ -76,4 +79,29 @@ def remove_session(
     return {
         "success": True
     }
-  
+
+
+@router.patch(
+    "/sessions/{session_id}/pin"
+)
+def toggle_session_pin(
+    session_id: str
+):
+
+    session = toggle_pin(
+        session_id
+    )
+
+    if not session:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Session not found"
+        )
+
+    return {
+
+        "is_pinned":
+            session.is_pinned
+
+    }
