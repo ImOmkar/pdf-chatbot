@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from app.services.rag_service import (
                     get_document_metadata,
                     get_documents,
-                    delete_document
+                    delete_document,
                 )
 
 
