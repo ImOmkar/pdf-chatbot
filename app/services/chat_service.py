@@ -82,7 +82,7 @@ class ChatService:
 
                 request,
 
-                history
+                history,
 
             ),
 
@@ -104,7 +104,9 @@ class ChatService:
 
             request.question,
 
-            history
+            history,
+
+            request.documents
 
         ):
 

@@ -562,7 +562,8 @@ def delete_document(
 
 def stream_answer(
     question,
-    session_history
+    session_history,
+    documents
 ):
     
     rewritten_question = (
@@ -572,9 +573,39 @@ def stream_answer(
         )
     )
     
-    docs = retriever.invoke(
-        rewritten_question
-    )
+    # docs = retriever.invoke(
+    #     rewritten_question
+    # )
+
+    if documents:
+
+        docs = vector_store.similarity_search(
+
+            rewritten_question,
+
+            k=20
+
+        )
+
+        docs = [
+
+            doc
+
+            for doc in docs
+
+            if doc.metadata.get(
+                "source"
+            ) in documents
+
+        ]
+
+        docs = docs[:3]
+
+    else:
+
+        docs = retriever.invoke(
+            rewritten_question
+        )
     
     sources = []
 
