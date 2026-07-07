@@ -1,15 +1,24 @@
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
-*.pyd
 
 # Virtual Environment
 .venv/
 venv/
 
-# Environment Variables
+# Environment
 .env
+
+# Database
+chatbot.db
+*.db
+
+# Uploaded files
+uploads/
+
+# Vector database
+chroma_db/
 
 # IDE
 .vscode/
@@ -18,13 +27,3 @@ venv/
 # OS
 .DS_Store
 Thumbs.db
-
-# Chroma DB
-chroma_db/
-
-uploads/
-
-chatbot.db
-
-# Logs
-*.log
