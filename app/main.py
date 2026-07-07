@@ -59,6 +59,6 @@ app.include_router(
 @app.get("/")
 def home():
     return {
-        "message": "PDF ChatBot  API Running"
+        "message": "DocMind AI API is running 🚀"
     }
 
